@@ -22,7 +22,7 @@ public class Fish : MonoBehaviour
     private Hook hook;
     private RodString rodString;
     public FishData data { get; set; }
-    public int defaultSecondsBiting = 5;
+    public int defaultSecondsBiting = 10;
 
     private CancellationTokenSource source = new();
     private Sequence caughtTween;
@@ -37,7 +37,7 @@ public class Fish : MonoBehaviour
         hook = DI.sceneScope.getInstance<Hook>();
         rodString = DI.sceneScope.getInstance<RodString>();
         SetDirection(Vector3.left);
-        data = new FishData("Stavrida!", "9");
+        data = FishDB.getRandomFish();
         var spritesheet = SpriteLoader.load("Sprites", "sprites");
 
         spriteRenderer.sprite = spritesheet.getAtSuffix(data.SpritePath);
@@ -95,7 +95,6 @@ public class Fish : MonoBehaviour
     {
         while (isAlive)
         {
-            Debug.Log("Changing decision ");
             changeDecision();
             var randomDistance = Random.Range(2f, 5f);
             await transform.DOMove(transform.position + currentDirection * speed * randomDistance, randomDistance)

@@ -25,7 +25,7 @@ namespace DefaultNamespace.game
         private void Start()
         {
             var attracts = GetComponents<CircleCollider2D>();
-            bait = new FishData("Worm", baitStrength: 10);
+            bait = new FishData("Worm", baitStrength: 5);
             mainAttract = attracts[0];
         }
 

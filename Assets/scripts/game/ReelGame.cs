@@ -37,11 +37,11 @@ namespace DefaultNamespace.game
             {
                 allChildrenSR.DOColor(allChildrenSR.color.WithAlpha(1f), 0.25f).From(allChildrenSR.color.WithAlpha(0f));
             }
-            handle.transform.DORotate(new Vector3(0f, 0f, 360f), 12, RotateMode.LocalAxisAdd).SetEase(Ease.Linear).SetLoops(-1, LoopType.Restart);
         }
         
         public async UniTask<bool> StartGame(int times)
         {
+            await ShowReel();
             handle.transform.DOKill();
             var tween =
                 // DOTween.Sequence().
@@ -54,10 +54,12 @@ namespace DefaultNamespace.game
                 if (!pointerCollider.IsTouching(handleCollider))
                 {
                     tween.Kill();
+                    await HideReel();
                     return false;
                 }
             }
             tween.Kill();
+            await HideReel();
             return true;
         }
 

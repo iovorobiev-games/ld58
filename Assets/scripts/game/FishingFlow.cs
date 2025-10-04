@@ -13,6 +13,7 @@ namespace DefaultNamespace.game
         private Hook hook;
         private ThrowGame throwGame;
         private ReelGame reelGame;
+        private ResultWindow resultWindow;
 
         private void Awake()
         {
@@ -27,6 +28,7 @@ namespace DefaultNamespace.game
             hook = DI.sceneScope.getInstance<Hook>();
             throwGame = DI.sceneScope.getInstance<ThrowGame>();
             reelGame = DI.sceneScope.getInstance<ReelGame>();
+            resultWindow = DI.sceneScope.getInstance<ResultWindow>();
         }
 
         public async UniTask StartFlow()
@@ -41,30 +43,29 @@ namespace DefaultNamespace.game
             if (result.hasResultLeft)
             {
                 caughtFish = result.result;
-                await reelGame.ShowReel();
-                var fishingResult= await UniTask.WhenAny(onClickAwaitable(), caughtFish.releaseWhenItWants());
-                if (fishingResult == 1)
+                var fishingResult= await UniTask.WhenAny(reelGame.StartGame(1 + caughtFish.data.Strength), caughtFish.releaseWhenItWants());
+                if (!fishingResult.hasResultLeft)
                 {
+                    await reelGame.HideReel();
                     caughtFish.release().Forget();
                     caughtFish = null;
                 }
                 else
                 {
-                    var isCaught = await reelGame.StartGame(3 + caughtFish.data.Strength);
-                    if (!isCaught)
+                    
+                    if (!fishingResult.result)
                     {
                         caughtFish.release().Forget();
                         caughtFish = null;   
                     }
                 }
-
-                await reelGame.HideReel();
             }
             await fisher.pullHook();
-            Debug.Log("Caught a fish: " + (caughtFish?.data?.Name ?? "none"));
             if (caughtFish != null)
             {
+                var data = caughtFish.data;
                 caughtFish.Destroy();
+                await resultWindow.showWith(data);
             }
         }
     }
