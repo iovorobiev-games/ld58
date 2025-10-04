@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - hook
   layers:
   - Default
   - TransparentFX
@@ -11,8 +12,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - walls
+  - Hook
   - 
   - 
   - 
@@ -46,6 +47,9 @@ TagManager:
     locked: 0
   - name: waves
     uniqueID: 2667366081
+    locked: 0
+  - name: sea_content
+    uniqueID: 2633875787
     locked: 0
   m_RenderingLayers:
   - Default

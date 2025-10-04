@@ -9,6 +9,9 @@ namespace DefaultNamespace.game
     {
         
         BoxCollider2D collider;
+        private Fisher fisher;
+        private Hook hook;
+        
         private void Awake()
         {
             DI.sceneScope.register(this);
@@ -16,17 +19,21 @@ namespace DefaultNamespace.game
 
         private void Start()
         {
+            
             collider = GetComponent<BoxCollider2D>();
+            fisher = DI.sceneScope.getInstance<Fisher>();
+            hook = DI.sceneScope.getInstance<Hook>();
         }
 
         public async UniTask StartFlow()
         {
-            var fisher = DI.sceneScope.getInstance<Fisher>();
             collider.enabled = true;
             await onClickAwaitable();
             await fisher.prepareThrow();
             await onClickAwaitable();
             await fisher.startFishing();
+            var result = await UniTask.WhenAny(hook.startAttract(1), onClickAwaitable());
+            await fisher.pullHook();
         }
     }
 }

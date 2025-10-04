@@ -18,7 +18,11 @@ namespace DefaultNamespace
         private async UniTask startScene()
         {
             var fishingFlow = DI.sceneScope.getInstance<FishingFlow>();
-            await fishingFlow.StartFlow();
+            while (true)
+            {
+                await fishingFlow.StartFlow();    
+            }
+            
         }
         async UniTask waitForRestart()
         {
