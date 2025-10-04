@@ -12,6 +12,7 @@ namespace DefaultNamespace.game
         private Fisher fisher;
         private Hook hook;
         private ThrowGame throwGame;
+        private ReelGame reelGame;
 
         private void Awake()
         {
@@ -25,6 +26,7 @@ namespace DefaultNamespace.game
             fisher = DI.sceneScope.getInstance<Fisher>();
             hook = DI.sceneScope.getInstance<Hook>();
             throwGame = DI.sceneScope.getInstance<ThrowGame>();
+            reelGame = DI.sceneScope.getInstance<ReelGame>();
         }
 
         public async UniTask StartFlow()
@@ -39,12 +41,24 @@ namespace DefaultNamespace.game
             if (result.hasResultLeft)
             {
                 caughtFish = result.result;
+                await reelGame.ShowReel();
                 var fishingResult= await UniTask.WhenAny(onClickAwaitable(), caughtFish.releaseWhenItWants());
                 if (fishingResult == 1)
                 {
                     caughtFish.release().Forget();
                     caughtFish = null;
                 }
+                else
+                {
+                    var isCaught = await reelGame.StartGame(3 + caughtFish.data.Strength);
+                    if (!isCaught)
+                    {
+                        caughtFish.release().Forget();
+                        caughtFish = null;   
+                    }
+                }
+
+                await reelGame.HideReel();
             }
             await fisher.pullHook();
             Debug.Log("Caught a fish: " + (caughtFish?.data?.Name ?? "none"));

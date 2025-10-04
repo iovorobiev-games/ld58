@@ -6,10 +6,8 @@ using DefaultNamespace;
 using DefaultNamespace.game;
 using DG.Tweening;
 using template.sprites;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
-using ColorUtility = Unity.VisualScripting.ColorUtility;
 using Random = UnityEngine.Random;
 using Sequence = DG.Tweening.Sequence;
 
