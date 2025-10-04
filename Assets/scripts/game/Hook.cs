@@ -14,7 +14,7 @@ namespace DefaultNamespace.game
         public float defaultRadius = 2f;
         private bool hasPrey;
         
-        private UniTaskCompletionSource<FishData> hookedSource = new();
+        private UniTaskCompletionSource<Fish> hookedSource = new();
         private Tween bitingTween;
         
         private void Awake()
@@ -29,10 +29,10 @@ namespace DefaultNamespace.game
             mainAttract = attracts[0];
         }
 
-        public async UniTask<FishData> startAttract(int power)
+        public async UniTask<Fish> startAttract(int power)
         {
             hookedSource.TrySetCanceled();
-            hookedSource = new UniTaskCompletionSource<FishData>();
+            hookedSource = new UniTaskCompletionSource<Fish>();
             mainAttract.radius = defaultRadius * power;
             var fish = await hookedSource.Task;
             hasPrey = true;
@@ -50,6 +50,7 @@ namespace DefaultNamespace.game
         public void cancelBiting()
         {
             DOTween.Kill(bitingTween);
+            hasPrey = false;
         }
         
         public FishData getBait()
@@ -67,7 +68,7 @@ namespace DefaultNamespace.game
             return await hookedSource.Task != null;
         }
         
-        public void hooked(FishData fish)
+        public void hooked(Fish fish)
         {
             hookedSource.TrySetResult(fish);
         }

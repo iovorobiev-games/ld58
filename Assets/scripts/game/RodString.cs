@@ -44,6 +44,7 @@ namespace DefaultNamespace.game
             await hookForLine.DOMove(newHookPosition, 0.5f).SetEase(Ease.OutCubic).ToUniTask();
             hookForLine = hook;
             hook.parent = transform.parent;
+            stableParent.position = Vector3.zero;
         }
 
         public bool isHookThrown()

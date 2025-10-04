@@ -21,7 +21,7 @@ public class Fish : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Hook hook;
     private RodString rodString;
-    private FishData data;
+    public FishData data { get; set; }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -30,20 +30,15 @@ public class Fish : MonoBehaviour
         hook = DI.sceneScope.getInstance<Hook>();
         rodString = DI.sceneScope.getInstance<RodString>();
         SetDirection(Vector3.left);
-        SetData(new FishData("Stavrida!", "9"));
+        data = new FishData("Stavrida!", "9");
         var spritesheet = SpriteLoader.load("Sprites", "sprites");
 
         spriteRenderer.sprite = spritesheet.getAtSuffix(data.SpritePath);
         move().Forget();
         if (isAlive)
         {
-            spriteRenderer.color = ColorUtility.WithAlpha(Color.black, 0.75f);;
+            spriteRenderer.color = Color.black.WithAlpha(0.75f);;
         }
-    }
-
-    public void SetData(FishData data)
-    {
-        this.data = data;
     }
 
     public void SetDirection(Vector3 direction)
@@ -136,14 +131,14 @@ public class Fish : MonoBehaviour
         Debug.Log("Moving to hook");
         var moveToHook = transform
             .DOMove(hook.transform.position,
-                Vector3.Distance(transform.position, hook.transform.position) / speed).SetEase(Ease.OutCubic)
+                Vector3.Distance(transform.position, hook.transform.position) / (speed * 1.5f)).SetEase(Ease.InQuad)
             .ToUniTask();
 
         var result = await UniTask.WhenAny(moveToHook, hook.awaitIsHooked());
         Debug.Log("Move finished because of " + result);
         if (rodString.isHookThrown() && result == 0)
         {
-            hook.hooked(data);
+            hook.hooked(this);
             transform.parent = hook.transform;
             DOTween.Sequence().Append(
                 DOTween.Sequence()
