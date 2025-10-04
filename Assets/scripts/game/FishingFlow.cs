@@ -33,6 +33,11 @@ namespace DefaultNamespace.game
             await onClickAwaitable();
             await fisher.startFishing();
             var result = await UniTask.WhenAny(hook.startAttract(1), onClickAwaitable());
+            FishData caughtFish = null;
+            if (result.hasResultLeft)
+            {
+                await onClickAwaitable();
+            }
             await fisher.pullHook();
         }
     }
