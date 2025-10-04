@@ -11,7 +11,8 @@ namespace DefaultNamespace.game
         BoxCollider2D collider;
         private Fisher fisher;
         private Hook hook;
-        
+        private ThrowGame throwGame;
+
         private void Awake()
         {
             DI.sceneScope.register(this);
@@ -23,6 +24,7 @@ namespace DefaultNamespace.game
             collider = GetComponent<BoxCollider2D>();
             fisher = DI.sceneScope.getInstance<Fisher>();
             hook = DI.sceneScope.getInstance<Hook>();
+            throwGame = DI.sceneScope.getInstance<ThrowGame>();
         }
 
         public async UniTask StartFlow()
@@ -30,20 +32,25 @@ namespace DefaultNamespace.game
             collider.enabled = true;
             await onClickAwaitable();
             await fisher.prepareThrow();
-            await onClickAwaitable();
-            await fisher.startFishing();
-            var result = await UniTask.WhenAny(hook.startAttract(1), onClickAwaitable());
+            int power = await throwGame.StartGame();
+            await fisher.startFishing(power);
+            var result = await UniTask.WhenAny(hook.startAttract(power), onClickAwaitable());
             Fish caughtFish = null;
             if (result.hasResultLeft)
             {
                 caughtFish = result.result;
-                await onClickAwaitable();
+                var fishingResult= await UniTask.WhenAny(onClickAwaitable(), caughtFish.releaseWhenItWants());
+                if (fishingResult == 1)
+                {
+                    caughtFish.release().Forget();
+                    caughtFish = null;
+                }
             }
             await fisher.pullHook();
             Debug.Log("Caught a fish: " + (caughtFish?.data?.Name ?? "none"));
             if (caughtFish != null)
             {
-                Destroy(caughtFish.gameObject);
+                caughtFish.Destroy();
             }
         }
     }

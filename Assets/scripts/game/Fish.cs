@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using DefaultNamespace;
@@ -10,6 +11,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using ColorUtility = Unity.VisualScripting.ColorUtility;
 using Random = UnityEngine.Random;
+using Sequence = DG.Tweening.Sequence;
 
 public class Fish : MonoBehaviour
 {
@@ -22,10 +24,17 @@ public class Fish : MonoBehaviour
     private Hook hook;
     private RodString rodString;
     public FishData data { get; set; }
+    public int defaultSecondsBiting = 5;
+
+    private CancellationTokenSource source = new();
+    private Sequence caughtTween;
+
+    private Transform originParent;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        originParent = transform.parent;
         spriteRenderer = GetComponent<SpriteRenderer>();
         hook = DI.sceneScope.getInstance<Hook>();
         rodString = DI.sceneScope.getInstance<RodString>();
@@ -140,7 +149,7 @@ public class Fish : MonoBehaviour
         {
             hook.hooked(this);
             transform.parent = hook.transform;
-            DOTween.Sequence().Append(
+            caughtTween = DOTween.Sequence().Append(
                 DOTween.Sequence()
                     .Append(
                         transform.DORotate(Vector3.forward * 10, 0.1f).SetLoops(2, LoopType.Yoyo)
@@ -149,11 +158,35 @@ public class Fish : MonoBehaviour
                         transform.DORotate(Vector3.back * 10, 0.1f).SetLoops(2, LoopType.Yoyo)
                     ).SetLoops(Random.Range(2, 4), LoopType.Yoyo)
             ).AppendInterval(1f).SetLoops(-1, LoopType.Yoyo);
+            
         }
         else
         {
-            isAlive = true;
-            move().Forget();
+            release().Forget();
         }
+    }
+
+    public async UniTask releaseWhenItWants()
+    {
+        source?.Cancel();
+        source = new CancellationTokenSource();
+        await UniTask.WaitForSeconds((float)defaultSecondsBiting / data.Cunning).AttachExternalCancellation(source.Token);
+    }
+
+    public async UniTask release()
+    {
+        caughtTween?.Kill();
+        transform.DOKill();
+        transform.parent = originParent;
+        isAlive = true;
+        move().Forget();
+    }
+    
+    public void Destroy()
+    {
+        transform.DOKill();
+        caughtTween?.Kill();
+        source?.Cancel();
+        Destroy(gameObject);
     }
 }

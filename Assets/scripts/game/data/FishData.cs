@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace DefaultNamespace.game
 {
     public class FishData
@@ -35,7 +37,7 @@ namespace DefaultNamespace.game
         public FishData(string name = null, string spritePath = null, int cunning = default, int strength = default, int rarity = default, int baitStrength = default)
         {
             Name = name;
-            Cunning = cunning;
+            Cunning = Mathf.Max(cunning, 1);
             Strength = strength;
             Rarity = rarity;
             BaitStrength = baitStrength;

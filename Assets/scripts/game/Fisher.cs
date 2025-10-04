@@ -25,11 +25,11 @@ namespace DefaultNamespace.game
             animator.Play("throw");
         }
 
-        public async UniTask startFishing()
+        public async UniTask startFishing(int power)
         {
             animator.Play("actually_throw");
             await UniTask.Delay(250);
-            await rodString.throwHook(7f, 1, 1);
+            await rodString.throwHook(3.5f * power, power, 1);
         }
 
         public async UniTask pullHook()

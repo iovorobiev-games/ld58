@@ -43,8 +43,9 @@ namespace DefaultNamespace.game
         private async UniTask animateCapture()
         {
             bitingTween = DOTween.Sequence()
-                .Append(transform.parent.DOMove(transform.parent.position + Vector3.down * 0.1f, 0.2f).SetLoops(2, LoopType.Yoyo))
-                .AppendInterval(0.5f);
+                .Append(transform.parent.DOMove(transform.parent.position + Vector3.down * 0.1f, 0.2f)
+                    .SetLoops(2, LoopType.Yoyo))
+                .AppendInterval(0.5f).SetLoops(-1, LoopType.Yoyo);
         }
 
         public void cancelBiting()
