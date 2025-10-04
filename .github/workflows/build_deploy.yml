@@ -83,9 +83,8 @@ jobs:
           targetPlatform: WebGL
 
       # Zip release build
-      - uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r build/html.zip  build/WebGL
+      - name: Zip
+        run: zip -r build/html.zip  build/WebGL
 
       - name: Upload to itch
         uses: Ayowel/butler-to-itch@v1
