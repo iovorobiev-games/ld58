@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7444305560719656904}
   - component: {fileID: 4935898478694674494}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: sprites_9
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -96,7 +96,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6276756547191430539}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mouth
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 2837983164402774110}
   - component: {fileID: 7124281804615576369}
   - component: {fileID: 5531194245522707910}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: FishCont
   m_TagString: Untagged
   m_Icon: {fileID: 0}
