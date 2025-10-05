@@ -61,6 +61,11 @@ namespace DefaultNamespace.game
             for (var i = 0; i < cells.Count; i++)
             {
                 cells[i].sprite.gameObject.SetActive(i < inventory.Count);
+                if (i >= inventory.Count)
+                {
+                    continue;
+                }
+                // ( fish, count)
                 var (fish, count) = inventory[(i + offset) % inventory.Count];
                 cells[i].setFishData(fish, count);
             }

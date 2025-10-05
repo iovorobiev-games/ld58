@@ -14,11 +14,16 @@ namespace DefaultNamespace.game
 
         private void Start()
         {
-            spriteSheet = SpriteLoader.load("Sprites", "sprites");
+            
         }
 
         public void setFishData(FishData fishData, int count)
         {
+            spriteSheet = SpriteLoader.load("Sprites", "sprites");
+            if (fishData == null)
+            {
+                return;
+            }
             if (count < 0)
             {
                 countText.gameObject.SetActive(false);

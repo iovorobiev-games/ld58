@@ -22,8 +22,7 @@ namespace DefaultNamespace.game
             new FishData(
                 "Bubblington", 
                 "8", 
-                iconPath: 
-                "26", 
+                iconPath: "26", 
                 strength:2, 
                 depth: 1,
                 hiddenDescription: "Bubblington was the first fish that I drew for this game",
