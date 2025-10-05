@@ -61,6 +61,7 @@ namespace DefaultNamespace.game
             for (var i = 0; i < cells.Count; i++)
             {
                 cells[i].sprite.gameObject.SetActive(i < inventory.Count);
+                cells[i].countText.gameObject.SetActive(i < inventory.Count);
                 if (i >= inventory.Count)
                 {
                     continue;
