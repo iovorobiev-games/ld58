@@ -2,6 +2,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using utils;
+using Random = UnityEngine.Random;
 
 namespace DefaultNamespace.game
 {
@@ -14,6 +15,8 @@ namespace DefaultNamespace.game
         private ThrowGame throwGame;
         private ReelGame reelGame;
         private ResultWindow resultWindow;
+        private ChooseBait chooseBait;
+        private FishSpawner spawner;
 
         private void Awake()
         {
@@ -29,12 +32,16 @@ namespace DefaultNamespace.game
             throwGame = DI.sceneScope.getInstance<ThrowGame>();
             reelGame = DI.sceneScope.getInstance<ReelGame>();
             resultWindow = DI.sceneScope.getInstance<ResultWindow>();
+            chooseBait = DI.sceneScope.getInstance<ChooseBait>();
+            spawner = DI.sceneScope.getInstance<FishSpawner>();
+            collider.enabled = true;
+
         }
 
         public async UniTask StartFlow()
         {
-            collider.enabled = true;
-            await onClickAwaitable();
+            var bait = await chooseBait.chooseBait();
+            hook.bait = bait;
             await fisher.prepareThrow();
             int power = await throwGame.StartGame();
             await fisher.startFishing(power);
@@ -64,8 +71,23 @@ namespace DefaultNamespace.game
             if (caughtFish != null)
             {
                 var data = caughtFish.data;
+                spawner.SpawnOnDepth(data.Depth);
                 caughtFish.Destroy();
                 await resultWindow.showWith(data);
+            }
+            else
+            {
+                var shouldSpawn = Random.Range(0f, 0.25f);
+                if (shouldSpawn < 0.25f)
+                {
+                    var depth = shouldSpawn switch
+                    {
+                        < 0.05f => 2,
+                        < 0.15f => 1,
+                        _ => 0
+                    };
+                    spawner.SpawnOnDepth(depth);
+                }
             }
         }
     }

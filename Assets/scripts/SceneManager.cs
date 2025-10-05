@@ -1,11 +1,15 @@
 using Cysharp.Threading.Tasks;
 using DefaultNamespace.game;
+using TMPro;
 using UnityEngine;
 
 namespace DefaultNamespace
 {
     public class SceneManager : MonoBehaviour
     {
+        public TMP_Text title;
+        public Renderer curtain;
+        
         async void Start()
         {
             waitForRestart().Forget();
@@ -17,7 +21,12 @@ namespace DefaultNamespace
 
         private async UniTask startScene()
         {
+            
+            
             var fishingFlow = DI.sceneScope.getInstance<FishingFlow>();
+            var spawner = DI.sceneScope.getInstance<FishSpawner>();
+            await spawner.InitialSpawn(3);
+            await fishingFlow.onClickAwaitable();
             while (true)
             {
                 await fishingFlow.StartFlow();    

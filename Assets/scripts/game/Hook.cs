@@ -7,7 +7,7 @@ namespace DefaultNamespace.game
 {
     public class Hook : MonoBehaviour
     {
-        private FishData bait;
+        public FishData bait;
         
         private CircleCollider2D mainAttract;
 
@@ -25,7 +25,6 @@ namespace DefaultNamespace.game
         private void Start()
         {
             var attracts = GetComponents<CircleCollider2D>();
-            bait = new FishData("Worm", baitStrength: 5);
             mainAttract = attracts[0];
         }
 

@@ -16,14 +16,22 @@ public class Fish : MonoBehaviour
 {
     private Vector3 initDirection;
     private Vector3 currentDirection;
-    private float speed = 0.3f;
+    private float speed = 0.2f;
     private bool isAlive = true;
     private bool metwall = false;
     private SpriteRenderer spriteRenderer;
     private Hook hook;
     private RodString rodString;
-    public FishData data { get; set; }
-    public int defaultSecondsBiting = 10;
+    private FishData _data;
+    public FishData data {
+        get => _data;
+        set
+        {
+            _data = value;
+            speed *= Math.Max(value.Strength, 1);
+        }
+    }
+    public int defaultSecondsBiting = 15;
     private int id;
     public List<AudioClip> nomSounds = new();
 
@@ -44,11 +52,11 @@ public class Fish : MonoBehaviour
         hook = DI.sceneScope.getInstance<Hook>();
         rodString = DI.sceneScope.getInstance<RodString>();
         SetDirection(Vector3.left);
-        data = FishDB.getRandomFish();
         audioSource = GetComponent<AudioSource>();
         var spritesheet = SpriteLoader.load("Sprites", "sprites");
 
         spriteRenderer.sprite = spritesheet.getAtSuffix(data.SpritePath);
+        Appear().Forget();
         move().Forget();
         if (isAlive)
         {
@@ -56,6 +64,11 @@ public class Fish : MonoBehaviour
         }
     }
 
+    public async UniTask Appear()
+    {
+        spriteRenderer.DOColor(Color.black.WithAlpha(0.75f), 0.25f).From(Color.black.WithAlpha(0f));
+    }
+    
     public void SetDirection(Vector3 direction)
     {
         initDirection = direction;
@@ -66,13 +79,14 @@ public class Fish : MonoBehaviour
     {
         if (metwall)
         {
-            currentDirection = -currentDirection;
+            currentDirection = -currentDirection.normalized;
             metwall = false;
+            Debug.Log(id + "Met wall");
             return;
         }
         var xAxis = Random.Range(0f, 1f);
         var xDir = 0f;
-        if (xAxis < 0.35f)
+        if (xAxis < 0.3f)
         {
             xDir = -1f;
         }
@@ -92,12 +106,7 @@ public class Fish : MonoBehaviour
             yDir = 1;
         }
 
-        if (xDir != 0)
-        {
-            transform.localScale = new Vector3(-1 * xDir, transform.localScale.y, transform.localScale.z);
-        }
-
-        currentDirection = new Vector3(xDir, yDir, 0f);
+        currentDirection = new Vector3(xDir, yDir, 0f).normalized;
     }
 
     private async UniTask move()
@@ -110,12 +119,18 @@ public class Fish : MonoBehaviour
             var randomDistance = Random.Range(2f, 5f);
             
             var transformPosition = transform.position + currentDirection * speed * randomDistance;
-            Debug.Log(id + " is moving to " +transformPosition);
             await transform.DOMove(transformPosition, randomDistance)
-                .SetEase(Ease.OutCubic).ToUniTask().AttachExternalCancellation(moveSource.Token);
-            Debug.Log(id + " finished moving to " +transformPosition);
+                .SetEase(Ease.OutCubic).ToUniTask();
         }
-        
+        Debug.Log(id + " " + data.Name + " is not alive ");
+    }
+
+    private Vector3 lastFramePosition = Vector3.zero;
+
+    public void Update()
+    {
+        transform.localScale = new Vector3(Mathf.Sign(lastFramePosition.x - transform.position.x), 1, 1);
+        lastFramePosition = transform.position;
     }
 
     public async void OnTriggerEnter2D(Collider2D other)
@@ -125,12 +140,10 @@ public class Fish : MonoBehaviour
             metwall = true;
             transform.DOKill();
             moveSource?.Cancel();
-            // isAlive = false;
-            Debug.Log("Collision enter wall");
         }
         else if (other.gameObject.layer == LayerMask.NameToLayer("Hook"))
         {
-            await HandleFishHooking();
+            await HandleFishHooking().SuppressCancellationThrow();
         }
         // else
         // {
@@ -141,41 +154,40 @@ public class Fish : MonoBehaviour
         // }
     }
 
-    private void OnCollisionEnter2D(Collision2D other)
-    {
-        Debug.Log("Collision happened");
-    }
-
     private async UniTask HandleFishHooking()
     {
-        Debug.Log(id + " The fish is hooked!");
         var bait = hook.getBait();
+
         
         if (bait.BaitStrength < data.Cunning || hook.HasPrey)
         {
             return;
         }
+        
         isAlive = false;
 
         transform.DOKill();
         moveSource?.Cancel();
-        Debug.Log(id + " Moving to hook");
         var distance = Vector3.Distance(transform.position, hook.transform.parent.position);
-        Debug.Log(id + " Distance to hook: " + distance);
         drawGizmoToHook = true;
+        await UniTask.WaitForSeconds(Random.Range(1f / data.Cunning, 0.5f + 1f / data.Cunning));
+
+        if (hook.HasPrey)
+        {
+            release().Forget();
+        }
+        
         var moveToHook = transform
             .DOMove(hook.transform.parent.position,
                 distance / (speed * 2f)).SetEase(Ease.Linear)
             .ToUniTask(); 
         drawGizmoToHook = false;
         var result = await UniTask.WhenAny(moveToHook, hook.awaitIsHooked());
-        Debug.Log(id + " Move finished because of " + result);
         if (rodString.isHookThrown() && result == 0)
         {
             audioSource.PlayOneShot(nomSounds[Random.Range(0, nomSounds.Count)]);;
             hook.hooked(this);
             transform.parent = hook.transform.parent;
-            Debug.Log("setting Position " + hook.transform.parent.position);
             transform.position = hook.transform.parent.position;
             caughtTween = DOTween.Sequence().Append(
                 DOTween.Sequence()
@@ -198,8 +210,7 @@ public class Fish : MonoBehaviour
     {
         source?.Cancel();
         source = new CancellationTokenSource();
-        await UniTask.Never(source.Token);
-        await UniTask.WaitForSeconds((float)defaultSecondsBiting / data.Cunning).AttachExternalCancellation(source.Token);
+        await UniTask.WaitForSeconds((float)defaultSecondsBiting / Mathf.Max(data.Cunning / 2, 1)).AttachExternalCancellation(source.Token);
     }
 
     public async UniTask release()
@@ -215,6 +226,7 @@ public class Fish : MonoBehaviour
     public void Destroy()
     {
         drawGizmoToHook = false;
+        isAlive = false;
         transform.DOKill();
         caughtTween?.Kill();
         source?.Cancel();

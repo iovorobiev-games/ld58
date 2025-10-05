@@ -28,5 +28,28 @@ namespace DefaultNamespace.game
         {
             collection.Add(fish);
         }
+
+        public void removeFish(FishData fish)
+        {
+            if (inventory.ContainsKey(fish))
+            {
+                inventory[fish]--;
+                if (inventory[fish] < 1)
+                {
+                    inventory.Remove(fish);
+                }
+            }
+        }
+        
+        public List<(FishData, int)> getSortedBaitInventory()
+        {
+            var list = new List<(FishData, int)>();
+            foreach (var (data, count) in inventory)
+            {
+                list.Add((data, count));
+            }
+            list.Insert(0, (FishDB.canOfWorms, -1));
+            return list;
+        }
     }
 }

@@ -14,6 +14,13 @@ namespace DefaultNamespace.game
             get;
         }
         
+        public string IconPath
+        {
+            get;
+        }
+
+
+        public string Description;
         public int Cunning
         {
             get;
@@ -34,7 +41,17 @@ namespace DefaultNamespace.game
             get;
         }
 
-        public FishData(string name = null, string spritePath = null, int cunning = default, int strength = default, int rarity = default, int baitStrength = default)
+        public string HiddenDescription
+        {
+            get;
+        }
+
+        public int Depth
+        {
+            get;
+        }
+
+        public FishData(string name = null, string spritePath = null, string hiddenDescription = null, string iconPath = null, int cunning = default, int strength = default, int rarity = default, int baitStrength = default, string description = null, int depth = default)
         {
             Name = name;
             Cunning = Mathf.Max(cunning, 1);
@@ -42,6 +59,10 @@ namespace DefaultNamespace.game
             Rarity = rarity;
             BaitStrength = baitStrength;
             SpritePath = spritePath;
+            IconPath = iconPath;
+            Description = description;
+            HiddenDescription = hiddenDescription;
+            Depth = depth;
         }
     }
 }
