@@ -39,7 +39,7 @@ namespace DefaultNamespace.game
             audioSource.PlayOneShot(throwEndSound);
             animator.Play("actually_throw");
             await UniTask.Delay(250);
-            await rodString.throwHook(2f + (power - 1) * 1.5f, power, 1);
+            await rodString.throwHook(2f + power * 1.5f, power, 1);
         }
 
         public async UniTask pullHook(bool happy)

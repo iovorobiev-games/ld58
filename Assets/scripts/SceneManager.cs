@@ -3,7 +3,6 @@ using DefaultNamespace.game;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
-using UnityEngine.WSA;
 
 namespace DefaultNamespace
 {
@@ -29,9 +28,11 @@ namespace DefaultNamespace
             var fishingFlow = DI.sceneScope.getInstance<FishingFlow>();
             var spawner = DI.sceneScope.getInstance<FishSpawner>();
             var collectionView = DI.sceneScope.getInstance<CollectionView>();
-            await spawner.InitialSpawn(3);
+            await spawner.InitialSpawn(4);
+            title.gameObject.SetActive(true);
+            title.text = "<sketchy>Click</sketchy>";
             await fishingFlow.onClickAwaitable();
-            
+            title.gameObject.SetActive(false);
             await book.swim();
             
             thoughts.SetActive(true);
@@ -44,9 +45,10 @@ namespace DefaultNamespace
             await UniTask.WaitForSeconds(2f);
             thoughtsText.text = "<sketchy>!!</sketchy>";
             title.gameObject.SetActive(true);
-
+            title.text = "Ah, gotta catch 'em all!";
             var textTask = title.DOColor(Color.white.WithAlpha(1f), 1f).From(Color.white.WithAlpha(0f)).ToUniTask();
             await textTask;
+            title.text = "<sketchy>Ah, gotta catch 'em all!</>";
             thoughts.SetActive(false);
             await UniTask.WaitForSeconds(1f);
             var curtainTask = curtain.material.DOFloat(0f, "_Progress", 2f).From(1f).ToUniTask();

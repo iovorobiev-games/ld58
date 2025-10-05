@@ -42,7 +42,7 @@ namespace DefaultNamespace.game
                 baitStrength: 10, 
                 cunning: 6, 
                 depth: 1,
-                strength: 2,
+                strength: 1,
                 hiddenDescription: "This fish has nothing to do with poppy, but it just sounds cute",
                 description: "Bright beauty-poppy is especially attractive, no fish will miss a chance to bite it."),
             new FishData(
@@ -52,7 +52,7 @@ namespace DefaultNamespace.game
                 cunning:9, 
                 depth: 2,
                 strength: 2,
-                hiddenDescription: "Punkfish doesn't care it can't be used as bait. It's just cool to be poisonous.",
+                hiddenDescription: "Punkfish thinks it is cool to be poisonous.",
                 description: "Punkfish are poisonous, it is unlikely to attract any fish with it."),
         };
         

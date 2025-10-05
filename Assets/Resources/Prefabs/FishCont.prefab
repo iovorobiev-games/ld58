@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f9e7a5cdf07d1a42bf554168ca1cecd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultSecondsBiting: 10
+  defaultSecondsBiting: 18
   nomSounds:
   - {fileID: 8300000, guid: d68ef21269f692946a4f3ce2137800dd, type: 3}
   - {fileID: 8300000, guid: 28c491d18519bc44baf54cca602caadb, type: 3}

@@ -8,6 +8,7 @@ namespace template.anim.components
     {
         public bool launchOnStart;
         public float amplitude = 1f;
+        public float amplitudeX = 1f;
         public float speedSec = 1f;
         public float shakeScale = 0.5f;
 
@@ -31,6 +32,16 @@ namespace template.anim.components
                     .SetLoops(2, LoopType.Yoyo))
                 .Append(transform.DOMoveY(transform.position.y + amplitude / 2f, speedSec / 2f)
                     .SetLoops(2, LoopType.Yoyo)).SetLoops(-1, LoopType.Restart);
+            if (amplitudeX > 0f)
+            {
+                DOTween.Sequence()
+                    .Append(transform.DOMoveY(transform.position.x - amplitude / 2f, speedSec / 2f)
+                        .SetLoops(2, LoopType.Yoyo))
+                    .Append(transform.DOMoveY(transform.position.x + amplitude / 2f, speedSec / 2f)
+                        .SetLoops(2, LoopType.Yoyo)).SetLoops(-1, LoopType.Restart);
+            }
+            
+            
             if (shakeScale > 0f)
             {
                 DOTween.Sequence()
