@@ -15,6 +15,10 @@ public class CollectionView : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     public Vector3 shownPos;
     
     private bool isShown = false;
+    public bool enabled;
+
+    private Tween hoverTween;
+    private Tween exitHoverTween;
 
     public List<CollectionItem> items = new();
 
@@ -39,38 +43,46 @@ public class CollectionView : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (isShown) return;
-        transform.DOKill();
+        hoverTween?.Kill();
+        exitHoverTween?.Kill();
         transform.DOMove(hiddenPos + Vector3.up * 0.5f, 0.2f);
     }
-
+    
     public void OnPointerExit(PointerEventData eventData)
     {
         if (isShown) return;
-        transform.DOKill();
+        hoverTween?.Kill();
+        exitHoverTween?.Kill();
         transform.DOMove(hiddenPos, 0.2f);
     }
 
     public async void OnPointerClick(PointerEventData eventData)
     {
+        if (!enabled) return;
         if (isShown)
         {
+            Debug.Log("click hide");
             await hideView();
         }
         else
         {
+            Debug.Log("click show");
+
             await showView();
         }
     }
 
-    private async UniTask showView()
+    public async UniTask showView()
     {
+        Debug.Log("show");
         transform.DOKill();
-        await transform.DOMove(shownPos, 0.2f).ToUniTask();
         isShown = true;
+        await transform.DOMove(shownPos, 0.2f).ToUniTask();
     }
 
-    private async UniTask hideView()
+    public async UniTask hideView()
     {
+        Debug.Log("hide");
         transform.DOKill();
         await transform.DOMove(hiddenPos, 0.2f).ToUniTask();
         isShown = false;

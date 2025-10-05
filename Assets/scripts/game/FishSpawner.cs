@@ -51,5 +51,14 @@ namespace DefaultNamespace.game
                 Quaternion.identity);
             fishObject.GetComponent<Fish>().data = FishDB.getRandomFishOfDepth(depth);
         }
+
+        public void Spawn(FishData fishData)
+        {
+            var spawnPosition = spawnPositions[fishData.Depth]; 
+            var fishObject = Instantiate(fishPrefab, Random.Range(0f, 1f) < 0.5f ? spawnPosition.Item1 : spawnPosition.Item2,
+                Quaternion.identity);
+            fishObject.GetComponent<Fish>().data = fishData;
+
+        }
     }
 }

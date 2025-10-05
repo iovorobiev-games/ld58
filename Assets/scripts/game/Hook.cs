@@ -33,25 +33,28 @@ namespace DefaultNamespace.game
             hookedSource.TrySetCanceled();
             hookedSource = new UniTaskCompletionSource<Fish>();
             mainAttract.enabled = true;
-            mainAttract.radius = defaultRadius * power;
+            mainAttract.radius = defaultRadius * 2;
             var fish = await hookedSource.Task;
-            mainAttract.enabled = false;
+            mainAttract.radius = 0;
             hasPrey = true;
-            animateCapture().Forget();
+            animateCapture();
             return fish;
         }
 
-        private async UniTask animateCapture()
+        private void animateCapture()
         {
             bitingTween = DOTween.Sequence()
                 .Append(transform.parent.DOMove(transform.parent.position + Vector3.down * 0.1f, 0.2f)
-                    .SetLoops(2, LoopType.Yoyo))
-                .AppendInterval(0.5f).SetLoops(-1, LoopType.Yoyo);
+                    .SetLoops(2, LoopType.Yoyo).SetId("hookBiting"))
+                .AppendInterval(0.5f)
+                .SetLoops(-1, LoopType.Yoyo).SetId("hookBitingTop");
         }
 
         public void cancelBiting()
         {
             DOTween.Kill(bitingTween);
+            DOTween.Kill("hookBiting");
+            DOTween.Kill("hookBitingTop");
             hasPrey = false;
         }
         

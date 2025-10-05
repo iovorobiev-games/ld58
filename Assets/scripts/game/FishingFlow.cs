@@ -17,6 +17,8 @@ namespace DefaultNamespace.game
         private ResultWindow resultWindow;
         private ChooseBait chooseBait;
         private FishSpawner spawner;
+        private Player player;
+        private CollectionView collection;
 
         private void Awake()
         {
@@ -34,6 +36,8 @@ namespace DefaultNamespace.game
             resultWindow = DI.sceneScope.getInstance<ResultWindow>();
             chooseBait = DI.sceneScope.getInstance<ChooseBait>();
             spawner = DI.sceneScope.getInstance<FishSpawner>();
+            player = DI.globalScope.getInstance<Player>();
+            collection = DI.sceneScope.getInstance<CollectionView>();
             collider.enabled = true;
 
         }
@@ -43,6 +47,7 @@ namespace DefaultNamespace.game
             var bait = await chooseBait.chooseBait();
             hook.bait = bait;
             await fisher.prepareThrow();
+            collection.hideView().Forget();
             int power = await throwGame.StartGame();
             await fisher.startFishing(power);
             var result = await UniTask.WhenAny(hook.startAttract(power), onClickAwaitable());
@@ -71,7 +76,10 @@ namespace DefaultNamespace.game
             if (caughtFish != null)
             {
                 var data = caughtFish.data;
-                spawner.SpawnOnDepth(data.Depth);
+                if (Random.Range(0f, 1f) > 0.5f)
+                    spawner.SpawnOnDepth(data.Depth);
+                else
+                    spawner.Spawn(FishDB.getRandomNotIn(player.collection));
                 caughtFish.Destroy();
                 await resultWindow.showWith(data);
             }

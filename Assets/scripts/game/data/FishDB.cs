@@ -31,7 +31,7 @@ namespace DefaultNamespace.game
             new FishData("Somus", 
                 "11", 
                 iconPath: "27", 
-                strength:3, 
+                strength:2, 
                 depth: 2,
                 hiddenDescription: "Catfish (which is an inspiration for somus) are named like this because of prominent barbels, resembling cat's whiskers.",
                 cunning: 8, description: "Somus are too big and terrifying to be a bait."),
@@ -42,6 +42,7 @@ namespace DefaultNamespace.game
                 baitStrength: 10, 
                 cunning: 6, 
                 depth: 1,
+                strength: 2,
                 hiddenDescription: "This fish has nothing to do with poppy, but it just sounds cute",
                 description: "Bright beauty-poppy is especially attractive, no fish will miss a chance to bite it."),
             new FishData(
@@ -50,6 +51,7 @@ namespace DefaultNamespace.game
                 iconPath:"32", 
                 cunning:9, 
                 depth: 2,
+                strength: 2,
                 hiddenDescription: "Punkfish doesn't care it can't be used as bait. It's just cool to be poisonous.",
                 description: "Punkfish are poisonous, it is unlikely to attract any fish with it."),
         };
@@ -58,7 +60,7 @@ namespace DefaultNamespace.game
             "Worms", 
             "21", 
             iconPath: "21",
-            description: "Worms attract small fish. They also never end.",
+            description: "Only a few fish prefer worms. But at least they never end.",
             baitStrength: 5);
 
         public static FishData getRandomFish()
@@ -70,6 +72,12 @@ namespace DefaultNamespace.game
         {
             var allFishOfDepth = allFish.Where((data) => data.Depth == depth).ToList();
             return allFishOfDepth[Random.Range(0, allFishOfDepth.Count)];
+        }
+
+        public static FishData getRandomNotIn(HashSet<FishData> excludes)
+        {
+            var allExcept = allFish.Where(data => !excludes.Contains(data)).ToList(); 
+            return allExcept[Random.Range(0, allExcept.Count)];
         }
     }
 }

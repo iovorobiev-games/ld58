@@ -5,7 +5,7 @@ namespace DefaultNamespace.game
     public class Player
     {
         private int maxInventorySize = 5;
-        private HashSet<FishData> collection = new();
+        public HashSet<FishData> collection = new();
         private Dictionary<FishData, int> inventory = new ();
 
         public void addToInventory(FishData fish)

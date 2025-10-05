@@ -71,6 +71,7 @@ namespace DefaultNamespace.game
             var clickTasks = Enumerable.Select(cells, inventoryCell => inventoryCell.onClickAwaitable()).ToList();
 
             var selectedCell = await UniTask.WhenAny(clickTasks);
+            Debug.Log("Selected cell " + selectedCell);
             return inventory[selectedCell].Item1;
         }
     }

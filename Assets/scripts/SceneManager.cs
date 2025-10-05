@@ -1,7 +1,9 @@
 using Cysharp.Threading.Tasks;
 using DefaultNamespace.game;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.WSA;
 
 namespace DefaultNamespace
 {
@@ -9,6 +11,9 @@ namespace DefaultNamespace
     {
         public TMP_Text title;
         public Renderer curtain;
+        public Book book;
+        public GameObject thoughts;
+        public TMP_Text thoughtsText;
         
         async void Start()
         {
@@ -21,17 +26,48 @@ namespace DefaultNamespace
 
         private async UniTask startScene()
         {
-            
-            
             var fishingFlow = DI.sceneScope.getInstance<FishingFlow>();
             var spawner = DI.sceneScope.getInstance<FishSpawner>();
+            var collectionView = DI.sceneScope.getInstance<CollectionView>();
             await spawner.InitialSpawn(3);
             await fishingFlow.onClickAwaitable();
-            while (true)
+            
+            await book.swim();
+            
+            thoughts.SetActive(true);
+            thoughtsText.text = "<sketchy>??</sketchy>";
+            await UniTask.WaitForSeconds(2f);
+            book.gameObject.SetActive(false);
+
+            collectionView.gameObject.SetActive(true);
+            await collectionView.showView();
+            await UniTask.WaitForSeconds(2f);
+            thoughtsText.text = "<sketchy>!!</sketchy>";
+            title.gameObject.SetActive(true);
+
+            var textTask = title.DOColor(Color.white.WithAlpha(1f), 1f).From(Color.white.WithAlpha(0f)).ToUniTask();
+            await textTask;
+            thoughts.SetActive(false);
+            await UniTask.WaitForSeconds(1f);
+            var curtainTask = curtain.material.DOFloat(0f, "_Progress", 2f).From(1f).ToUniTask();
+            await curtainTask;
+            await fishingFlow.onClickAwaitable();
+            collectionView.enabled = true;
+            await collectionView.hideView();
+            
+            await title.DOColor(Color.white.WithAlpha(0f), 2f).From(Color.white.WithAlpha(1f)).ToUniTask();
+            title.gameObject.SetActive(false);
+
+            var player = DI.globalScope.getInstance<Player>();
+            while (player.collection.Count < FishDB.allFish.Count)
             {
                 await fishingFlow.StartFlow();    
             }
-            
+            title.gameObject.SetActive(true);
+            title.text = "Thanks for playing!";
+            await title.DOColor(Color.white.WithAlpha(1f), 2f).From(Color.white.WithAlpha(0f)).ToUniTask();
+            title.text = "<sketchy>Thanks for playing!</sketchy>";
+            await collectionView.showView();
         }
         async UniTask waitForRestart()
         {

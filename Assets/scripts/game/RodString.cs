@@ -41,6 +41,7 @@ namespace DefaultNamespace.game
             hookThrown = false;
             var newHookPosition = transform.position + Vector3.down;
             hookBeh.cancelBiting();
+            stableParent.transform.DOKill();
             await hookForLine.DOMove(newHookPosition, 0.5f).SetEase(Ease.OutCubic).ToUniTask();
             hookForLine = hook;
             hook.parent = transform.parent;
