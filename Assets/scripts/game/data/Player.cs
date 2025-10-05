@@ -48,7 +48,16 @@ namespace DefaultNamespace.game
             {
                 list.Add((data, count));
             }
-            list.Insert(0, (FishDB.canOfWorms, -1));
+
+            if (list.Count == 0)
+            {
+                list.Add((FishDB.canOfWorms, -1));
+            }
+            else
+            {
+                list.Insert(0, (FishDB.canOfWorms, -1));    
+            }
+            
             return list;
         }
     }
