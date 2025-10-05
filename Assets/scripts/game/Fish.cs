@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -17,27 +18,34 @@ public class Fish : MonoBehaviour
     private Vector3 currentDirection;
     private float speed = 0.3f;
     private bool isAlive = true;
-    private bool metTop = false;
+    private bool metwall = false;
     private SpriteRenderer spriteRenderer;
     private Hook hook;
     private RodString rodString;
     public FishData data { get; set; }
     public int defaultSecondsBiting = 10;
+    private int id;
+    public List<AudioClip> nomSounds = new();
 
     private CancellationTokenSource source = new();
+    private CancellationTokenSource moveSource = new();
     private Sequence caughtTween;
+    private AudioSource audioSource;
 
     private Transform originParent;
+    private bool drawGizmoToHook = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        id = Random.Range(0, 1000000);
         originParent = transform.parent;
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         hook = DI.sceneScope.getInstance<Hook>();
         rodString = DI.sceneScope.getInstance<RodString>();
         SetDirection(Vector3.left);
         data = FishDB.getRandomFish();
+        audioSource = GetComponent<AudioSource>();
         var spritesheet = SpriteLoader.load("Sprites", "sprites");
 
         spriteRenderer.sprite = spritesheet.getAtSuffix(data.SpritePath);
@@ -56,6 +64,12 @@ public class Fish : MonoBehaviour
 
     private void changeDecision()
     {
+        if (metwall)
+        {
+            currentDirection = -currentDirection;
+            metwall = false;
+            return;
+        }
         var xAxis = Random.Range(0f, 1f);
         var xDir = 0f;
         if (xAxis < 0.35f)
@@ -69,7 +83,7 @@ public class Fish : MonoBehaviour
 
         var yDir = 0f;
         var yAxis = Random.Range(0f, 1f);
-        if (yAxis < 0.25f || metTop)
+        if (yAxis < 0.25f)
         {
             yDir = -1;
         }
@@ -83,11 +97,6 @@ public class Fish : MonoBehaviour
             transform.localScale = new Vector3(-1 * xDir, transform.localScale.y, transform.localScale.z);
         }
 
-        if (metTop)
-        {
-            metTop = false;
-        }
-
         currentDirection = new Vector3(xDir, yDir, 0f);
     }
 
@@ -95,57 +104,79 @@ public class Fish : MonoBehaviour
     {
         while (isAlive)
         {
+            moveSource?.Cancel();
+            moveSource = new CancellationTokenSource();
             changeDecision();
             var randomDistance = Random.Range(2f, 5f);
-            await transform.DOMove(transform.position + currentDirection * speed * randomDistance, randomDistance)
-                .SetEase(Ease.OutCubic).ToUniTask();
+            
+            var transformPosition = transform.position + currentDirection * speed * randomDistance;
+            Debug.Log(id + " is moving to " +transformPosition);
+            await transform.DOMove(transformPosition, randomDistance)
+                .SetEase(Ease.OutCubic).ToUniTask().AttachExternalCancellation(moveSource.Token);
+            Debug.Log(id + " finished moving to " +transformPosition);
         }
-        Debug.Log("Is alive false ");
+        
     }
 
     public async void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("walls"))
+        if (other.gameObject.layer == LayerMask.NameToLayer("walls") || other.gameObject.layer == LayerMask.NameToLayer("water"))
         {
-            isAlive = false;
+            metwall = true;
+            transform.DOKill();
+            moveSource?.Cancel();
+            // isAlive = false;
             Debug.Log("Collision enter wall");
         }
         else if (other.gameObject.layer == LayerMask.NameToLayer("Hook"))
         {
             await HandleFishHooking();
         }
-        else
-        {
-            metTop = true;
-            transform.DOKill();
-            Debug.Log("Collision enter not wall " + LayerMask.LayerToName(other.gameObject.layer));
-        }
+        // else
+        // {
+        //     metwall = true;
+        //     transform.DOKill();
+        //     moveSource?.Cancel();
+        //     // Debug.Log("Collision enter not wall " + LayerMask.LayerToName(other.gameObject.layer));
+        // }
+    }
+
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        Debug.Log("Collision happened");
     }
 
     private async UniTask HandleFishHooking()
     {
-        Debug.Log("The fish is hooked!");
+        Debug.Log(id + " The fish is hooked!");
         var bait = hook.getBait();
         
         if (bait.BaitStrength < data.Cunning || hook.HasPrey)
         {
             return;
         }
+        isAlive = false;
 
         transform.DOKill();
-        isAlive = false;
-        Debug.Log("Moving to hook");
+        moveSource?.Cancel();
+        Debug.Log(id + " Moving to hook");
+        var distance = Vector3.Distance(transform.position, hook.transform.parent.position);
+        Debug.Log(id + " Distance to hook: " + distance);
+        drawGizmoToHook = true;
         var moveToHook = transform
-            .DOMove(hook.transform.position,
-                Vector3.Distance(transform.position, hook.transform.position) / (speed * 1.5f)).SetEase(Ease.InQuad)
-            .ToUniTask();
-
+            .DOMove(hook.transform.parent.position,
+                distance / (speed * 2f)).SetEase(Ease.Linear)
+            .ToUniTask(); 
+        drawGizmoToHook = false;
         var result = await UniTask.WhenAny(moveToHook, hook.awaitIsHooked());
-        Debug.Log("Move finished because of " + result);
+        Debug.Log(id + " Move finished because of " + result);
         if (rodString.isHookThrown() && result == 0)
         {
+            audioSource.PlayOneShot(nomSounds[Random.Range(0, nomSounds.Count)]);;
             hook.hooked(this);
-            transform.parent = hook.transform;
+            transform.parent = hook.transform.parent;
+            Debug.Log("setting Position " + hook.transform.parent.position);
+            transform.position = hook.transform.parent.position;
             caughtTween = DOTween.Sequence().Append(
                 DOTween.Sequence()
                     .Append(
@@ -167,11 +198,13 @@ public class Fish : MonoBehaviour
     {
         source?.Cancel();
         source = new CancellationTokenSource();
+        await UniTask.Never(source.Token);
         await UniTask.WaitForSeconds((float)defaultSecondsBiting / data.Cunning).AttachExternalCancellation(source.Token);
     }
 
     public async UniTask release()
     {
+        drawGizmoToHook = false;
         caughtTween?.Kill();
         transform.DOKill();
         transform.parent = originParent;
@@ -181,9 +214,19 @@ public class Fish : MonoBehaviour
     
     public void Destroy()
     {
+        drawGizmoToHook = false;
         transform.DOKill();
         caughtTween?.Kill();
         source?.Cancel();
         Destroy(gameObject);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if ( hook != null && hook.transform.parent != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(transform.position, hook.transform.parent.position);
+        }
     }
 }

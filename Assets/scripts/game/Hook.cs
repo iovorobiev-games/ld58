@@ -33,8 +33,10 @@ namespace DefaultNamespace.game
         {
             hookedSource.TrySetCanceled();
             hookedSource = new UniTaskCompletionSource<Fish>();
+            mainAttract.enabled = true;
             mainAttract.radius = defaultRadius * power;
             var fish = await hookedSource.Task;
+            mainAttract.enabled = false;
             hasPrey = true;
             animateCapture().Forget();
             return fish;

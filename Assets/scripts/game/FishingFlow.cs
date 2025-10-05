@@ -60,7 +60,7 @@ namespace DefaultNamespace.game
                     }
                 }
             }
-            await fisher.pullHook();
+            await fisher.pullHook(caughtFish != null);
             if (caughtFish != null)
             {
                 var data = caughtFish.data;

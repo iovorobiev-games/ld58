@@ -16,7 +16,7 @@ namespace DefaultNamespace.game
         public float speedSec = 1f;
         private FishingFlow fishFlow;
         SpriteRenderer[] allChildrenSRs = new SpriteRenderer[0];
-        
+        private AudioSource audioSource;
         
         private void Awake()
         {
@@ -27,6 +27,7 @@ namespace DefaultNamespace.game
         {
             fishFlow = DI.sceneScope.getInstance<FishingFlow>();
             allChildrenSRs = GetComponentsInChildren<SpriteRenderer>();
+            audioSource = GetComponent<AudioSource>();
             gameObject.SetActive(false);
         }
 
@@ -42,6 +43,7 @@ namespace DefaultNamespace.game
         public async UniTask<bool> StartGame(int times)
         {
             await ShowReel();
+            audioSource.Play();
             handle.transform.DOKill();
             var tween =
                 // DOTween.Sequence().
@@ -53,11 +55,13 @@ namespace DefaultNamespace.game
                 await fishFlow.onClickAwaitable();
                 if (!pointerCollider.IsTouching(handleCollider))
                 {
+                    audioSource.Stop();
                     tween.Kill();
                     await HideReel();
                     return false;
                 }
             }
+            audioSource.Stop();
             tween.Kill();
             await HideReel();
             return true;

@@ -12,7 +12,7 @@ namespace DefaultNamespace.game
             new FishData("Bubblington", "8", strength:2),
             new FishData("Somus", "11", strength:3),
             new FishData("Beauty-poppy", "12"),
-            new FishData("Punkfish", "9", cunning:6),
+            new FishData("Punkfish", "9", cunning:2),
         };
 
         public static FishData getRandomFish()
