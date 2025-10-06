@@ -28,7 +28,9 @@ namespace DefaultNamespace
             var fishingFlow = DI.sceneScope.getInstance<FishingFlow>();
             var spawner = DI.sceneScope.getInstance<FishSpawner>();
             var collectionView = DI.sceneScope.getInstance<CollectionView>();
-            await spawner.InitialSpawn(4);
+            var allFish = await spawner.InitialSpawn(4);
+            var pond = DI.sceneScope.getInstance<Pond>();
+            pond.fish = allFish;
             title.gameObject.SetActive(true);
             title.text = "<sketchy>Click</sketchy>";
             await fishingFlow.onClickAwaitable();

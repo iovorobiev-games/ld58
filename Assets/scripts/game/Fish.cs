@@ -86,11 +86,22 @@ public class Fish : MonoBehaviour
         }
         var xAxis = Random.Range(0f, 1f);
         var xDir = 0f;
-        if (xAxis < 0.3f)
+
+        var rightProb = 0.7f;
+
+        if (transform.position.x < -3f)
+        {
+            rightProb = 0.85f;
+        } else if (transform.position.x > 2f)
+        {
+            rightProb = 0.15f;
+        }
+        
+        if (xAxis < (1 - rightProb))
         {
             xDir = -1f;
         }
-        else if (xAxis < 0.7f)
+        else if (xAxis < rightProb)
         {
             xDir = 1f;
         }
@@ -210,7 +221,7 @@ public class Fish : MonoBehaviour
     {
         source?.Cancel();
         source = new CancellationTokenSource();
-        await UniTask.WaitForSeconds((float)defaultSecondsBiting / Mathf.Max(data.Cunning / 2, 1)).AttachExternalCancellation(source.Token);
+        await UniTask.WaitForSeconds(10 + (float)(defaultSecondsBiting - 10) / Mathf.Max(data.Cunning, 1)).AttachExternalCancellation(source.Token);
     }
 
     public async UniTask release()

@@ -62,6 +62,11 @@ namespace DefaultNamespace.game
             description: "Only a few fish prefer worms. But at least they never end.",
             baitStrength: 5);
 
+        public static FishData findByName(string name)
+        {
+            return allFish.FirstOrDefault(data => data.Name == name);
+        }
+        
         public static FishData getRandomFish()
         {
             return allFish.ToList()[Random.Range(0, allFish.Count)];

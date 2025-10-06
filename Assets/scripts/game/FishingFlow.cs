@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using utils;
@@ -19,6 +20,7 @@ namespace DefaultNamespace.game
         private FishSpawner spawner;
         private Player player;
         private CollectionView collection;
+        private Pond pond;
 
         private void Awake()
         {
@@ -38,6 +40,7 @@ namespace DefaultNamespace.game
             spawner = DI.sceneScope.getInstance<FishSpawner>();
             player = DI.globalScope.getInstance<Player>();
             collection = DI.sceneScope.getInstance<CollectionView>();
+            pond = DI.sceneScope.getInstance<Pond>();
             collider.enabled = true;
 
         }
@@ -73,13 +76,26 @@ namespace DefaultNamespace.game
                 }
             }
             await fisher.pullHook(caughtFish != null);
+            FishData spawned = null;
             if (caughtFish != null)
             {
                 var data = caughtFish.data;
-                if (Random.Range(0f, 1f) > 0.5f)
-                    spawner.SpawnOnDepth(data.Depth);
+                pond.fish.Remove(caughtFish.data);
+                if (pond.getFishCount("Stardiva") < 2)
+                {
+                    spawned = FishDB.findByName("Stardiva");
+                    spawner.Spawn(spawned);
+                } else if (pond.getFishCount("Beauty-poppy") < 2)
+                {
+                    spawned = FishDB.findByName("Beauty-poppy");
+                    spawner.Spawn(spawned);
+                } else if (Random.Range(0f, 1f) > 0.5f)
+                    spawned = spawner.SpawnOnDepth(data.Depth);
                 else
-                    spawner.Spawn(FishDB.getRandomNotIn(player.collection));
+                {
+                    spawned = FishDB.getRandomNotIn(player.collection);
+                    spawner.Spawn(spawned);
+                }
                 caughtFish.Destroy();
                 await resultWindow.showWith(data);
             }
@@ -94,8 +110,13 @@ namespace DefaultNamespace.game
                         < 0.15f => 1,
                         _ => 0
                     };
-                    spawner.SpawnOnDepth(depth);
+                    spawned = spawner.SpawnOnDepth(depth);
                 }
+            }
+
+            if (spawned != null)
+            {
+                pond.fish.Add(spawned);
             }
         }
     }
