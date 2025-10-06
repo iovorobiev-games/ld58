@@ -43,6 +43,8 @@ public class Fish : MonoBehaviour
     private Transform originParent;
     private bool drawGizmoToHook = false;
 
+    private float alpha;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -58,15 +60,15 @@ public class Fish : MonoBehaviour
         spriteRenderer.sprite = spritesheet.getAtSuffix(data.SpritePath);
         Appear().Forget();
         move().Forget();
-        if (isAlive)
-        {
-            spriteRenderer.color = Color.black.WithAlpha(0.75f);;
-        }
     }
 
     public async UniTask Appear()
     {
-        spriteRenderer.DOColor(Color.black.WithAlpha(0.75f), 0.25f).From(Color.black.WithAlpha(0f));
+        if (alpha == 0f)
+        {
+            alpha = (50f + Random.Range(0, 4) * 10) / 100f;
+        }
+        spriteRenderer.DOColor(Color.black.WithAlpha(alpha), 0.5f).From(Color.black.WithAlpha(0f));
     }
     
     public void SetDirection(Vector3 direction)

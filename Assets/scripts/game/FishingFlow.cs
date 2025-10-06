@@ -53,6 +53,7 @@ namespace DefaultNamespace.game
             collection.hideView().Forget();
             int power = await throwGame.StartGame();
             await fisher.startFishing(power);
+            var cancelTask = UniTask.WaitForSeconds(15);
             var result = await UniTask.WhenAny(hook.startAttract(power), onClickAwaitable());
             Fish caughtFish = null;
             if (result.hasResultLeft)
